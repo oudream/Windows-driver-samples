@@ -1,3 +1,12 @@
+---
+topic: sample
+description: Demonstrates how a UMDF version 2 driver can implement F-state-based power management.
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: Power Framework (PoFx) Sample (UMDF Version 2)
     platform: UMDF2
@@ -7,13 +16,12 @@
     samplefwlink: http://go.microsoft.com/fwlink/p/?LinkId=617936
 --->
 
-
-Power Framework (PoFx) Sample (UMDF Version 2)
-==============================================
+# Power Framework (PoFx) Sample (UMDF Version 2)
 
 This solution demonstrates how a User-Mode Driver Framework (UMDF) version 2 driver can implement F-state-based power management. The SingleComp project demonstrates how a UMDF version 2 driver can implement F-state-based power management for a device that has only a single component.
 
 ## Universal Windows Driver Compliant
+
 This sample builds a Universal Windows Driver. It uses only APIs and DDIs that are included in OneCoreUAP.
 
 Related technologies
@@ -39,7 +47,7 @@ Before you automatically deploy a driver, you must provision the target computer
 
 ### Manual deployment (root enumerated)
 
-Before you manually deploy a driver, you must turn on test signing and install a certificate on the target computer. You also need to copy the [DevCon](http://msdn.microsoft.com/en-us/library/windows/hardware/ff544707) tool to the target computer. For instructions, see [Preparing a Computer for Manual Driver Deployment](http://msdn.microsoft.com/en-us/library/windows/hardware/dn265571).
+Before you manually deploy a driver, you must turn on test signing and install a certificate on the target computer. You also need to copy the [DevCon](http://msdn.microsoft.com/en-us/library/windows/hardware/ff544707) tool to the target computer. For instructions, see [Preparing a Computer for Manual Driver Deployment](https://docs.microsoft.com/en-us/windows-hardware/drivers/develop/preparing-a-computer-for-manual-driver-deployment).
 
 1.  Copy all of the files in your driver package to a folder on the target computer (for example, c:\\PoFx).
 2.  On the target computer, open a Command Prompt window as Administrator. Navigate to your driver package folder, and enter the following command:
@@ -60,4 +68,3 @@ As an alternative to building the driver sample in Visual Studio, you can build 
 **msbuild /p:configuration="Release" /p:platform="Win32" PoFx.sln**
 
 For more information about using MSBuild to build a driver package, see [Building a Driver](http://msdn.microsoft.com/en-us/library/windows/hardware/ff554644).
-

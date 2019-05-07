@@ -1,3 +1,12 @@
+---
+topic: sample
+description: A sample firewall that has a command-line interface which allows adding filters at various WFP layers.
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: Windows Filtering Platform Sample
     platform: KMDF
@@ -7,9 +16,7 @@
     samplefwlink: http://go.microsoft.com/fwlink/p/?LinkId=620198
 --->
 
-
-Windows Filtering Platform Sample
-=================================
+# Windows Filtering Platform Sample
 
 The WFPSampler sample driver is a sample firewall. It has a command-line interface which allows adding filters at various WFP layers with a wide variety of conditions. Additionally it exposes callout functions for injection, basic action, proxying, and stream inspection.
 
@@ -133,7 +140,7 @@ Before you automatically deploy a driver, you must provision the target computer
 Manual deployment
 -----------------
 
-Before you manually deploy a driver, you must turn on test signing and install a certificate on the target computer. You also need to copy the [DevCon](http://msdn.microsoft.com/en-us/library/windows/hardware/ff544707) tool to the target computer. For instructions, see [Preparing a Computer for Manual Driver Deployment](http://msdn.microsoft.com/en-us/library/windows/hardware/dn265571). After you have prepared the target computer for manual deployment, copy the following files to a folder on the target computer (for example, c:\\WFPSamplerSamplePackage):
+Before you manually deploy a driver, you must turn on test signing and install a certificate on the target computer. You also need to copy the [DevCon](http://msdn.microsoft.com/en-us/library/windows/hardware/ff544707) tool to the target computer. For instructions, see [Preparing a Computer for Manual Driver Deployment](https://docs.microsoft.com/en-us/windows-hardware/drivers/develop/preparing-a-computer-for-manual-driver-deployment). After you have prepared the target computer for manual deployment, copy the following files to a folder on the target computer (for example, c:\\WFPSamplerSamplePackage):
 
 -   The 4 files in your driver package folder
 -   The user-mode application (WFPSampler.exe) file
@@ -188,4 +195,3 @@ If you want to test whether your TraceView.exe session is working, you can enter
 For more information, see [Creating a Trace Session with a PDB File](http://msdn.microsoft.com/en-us/library/windows/hardware/ff543582).
 
 Tracing for the sample driver can be started at any time before the driver is started or while the driver is already running.
-

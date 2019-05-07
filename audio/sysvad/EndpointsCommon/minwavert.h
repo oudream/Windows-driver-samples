@@ -18,6 +18,9 @@ Abstract:
 #ifdef SYSVAD_BTH_BYPASS
 #include "bthhfpmicwavtable.h"
 #endif // SYSVAD_BTH_BYPASS
+#ifdef SYSVAD_USB_SIDEBAND
+#include "usbhsmicwavtable.h"
+#endif // SYSVAD_USB_SIDEBAND
 
 //=============================================================================
 // Referenced Forward
@@ -143,7 +146,8 @@ private:
     PKSDATAFORMAT_WAVEFORMATEXTENSIBLE  m_pDeviceFormat;
     PCFILTER_DESCRIPTOR                 m_FilterDesc;
     PIN_DEVICE_FORMATS_AND_MODES *      m_DeviceFormatsAndModes;
-    FAST_MUTEX                          m_DeviceFormatsAndModesLock; // To serialize access.
+    KSPIN_LOCK                          m_DeviceFormatsAndModesLock; // To serialize access.
+    KIRQL                               m_DeviceFormatsAndModesIrql;
     ULONG                               m_DeviceFormatsAndModesCount; 
     USHORT                              m_DeviceMaxChannels;
     PDRMPORT                            m_pDrmPort;
@@ -155,9 +159,9 @@ private:
 
     union {
         PVOID                           m_DeviceContext;
-#if defined(SYSVAD_BTH_BYPASS)
+#if defined(SYSVAD_BTH_BYPASS) || defined(SYSVAD_USB_SIDEBAND)
         PSIDEBANDDEVICECOMMON           m_pSidebandDevice;
-#endif  // defined(SYSVAD_BTH_BYPASS)
+#endif  // defined(SYSVAD_BTH_BYPASS) || defined(SYSVAD_USB_SIDEBAND)
     };
 
     AUDIOMODULE *                       m_pAudioModules;
@@ -329,7 +333,7 @@ public:
             }
         }
 
-#if defined(SYSVAD_BTH_BYPASS)
+#if defined(SYSVAD_BTH_BYPASS) || defined(SYSVAD_USB_SIDEBAND)
         if (IsSidebandDevice())
         {
             if (m_pSidebandDevice != NULL)
@@ -339,8 +343,11 @@ public:
             }
 
         }
-        ExInitializeFastMutex(&m_DeviceFormatsAndModesLock);
-#endif // defined(SYSVAD_BTH_BYPASS)
+
+#endif // defined(SYSVAD_BTH_BYPASS) || defined(SYSVAD_USB_SIDEBAND)
+
+        KeInitializeSpinLock(&m_DeviceFormatsAndModesLock);
+        m_DeviceFormatsAndModesIrql = PASSIVE_LEVEL;
     }
 
 #pragma code_seg()
@@ -414,6 +421,12 @@ public:
         _In_ PPCPROPERTY_REQUEST PropertyRequest
     );
 #endif  // SYSVAD_BTH_BYPASS
+#ifdef SYSVAD_USB_SIDEBAND
+    NTSTATUS PropertyHandler_UsbHsAudioEffectsDiscoveryEffectsList  
+    (
+        _In_ PPCPROPERTY_REQUEST PropertyRequest
+    );
+#endif  // SYSVAD_USB_SIDEBAND
 
     //---------------------------------------------------------------------------------------------------------
     // volume
@@ -488,180 +501,49 @@ public:
     );
 
 private:
-#pragma code_seg("PAGE")
-    //---------------------------------------------------------------------------
-    // GetPinSupportedDeviceFormats 
-    //
-    //  Return supported formats for a given pin.
-    //
-    //  Return value
-    //      The number of KSDATAFORMAT_WAVEFORMATEXTENSIBLE items.
-    //
-    //  Remarks
-    //      Supported formats index array follows same order as filter's pin
-    //      descriptor list.
-    //
+    _IRQL_raises_(DISPATCH_LEVEL)
+    _Acquires_lock_(m_DeviceFormatsAndModesLock)
+    _Requires_lock_not_held_(m_DeviceFormatsAndModesLock)
+    _IRQL_saves_global_(SpinLock, m_DeviceFormatsAndModesIrql)
+    VOID AcquireFormatsAndModesLock();
+
+    _Releases_lock_(m_DeviceFormatsAndModesLock)
+    _Requires_lock_held_(m_DeviceFormatsAndModesLock)
+    _IRQL_restores_global_(SpinLock, m_DeviceFormatsAndModesIrql)
+    VOID ReleaseFormatsAndModesLock();
+
     _Post_satisfies_(return > 0)
-    ULONG GetPinSupportedDeviceFormats(_In_ ULONG PinId, _Outptr_opt_result_buffer_(return) KSDATAFORMAT_WAVEFORMATEXTENSIBLE **ppFormats)
-    {
-        PAGED_CODE();
+    ULONG GetPinSupportedDeviceFormats(_In_ ULONG PinId, _Outptr_opt_result_buffer_(return) KSDATAFORMAT_WAVEFORMATEXTENSIBLE **ppFormats);
 
-        PPIN_DEVICE_FORMATS_AND_MODES pDeviceFormatsAndModes = NULL;
-
-        ExAcquireFastMutex(&m_DeviceFormatsAndModesLock);
-
-        pDeviceFormatsAndModes = m_DeviceFormatsAndModes;
-        ASSERT(m_DeviceFormatsAndModesCount > PinId);
-        ASSERT(pDeviceFormatsAndModes[PinId].WaveFormats != NULL);
-        ASSERT(pDeviceFormatsAndModes[PinId].WaveFormatsCount > 0);
-
-        if (ppFormats != NULL)
-        {
-            *ppFormats = pDeviceFormatsAndModes[PinId].WaveFormats;
-        }
-        
-        ExReleaseFastMutex(&m_DeviceFormatsAndModesLock);
-
-        return pDeviceFormatsAndModes[PinId].WaveFormatsCount;
-    }
-
-    //---------------------------------------------------------------------------
-    // GetAudioEngineSupportedDeviceFormats 
-    //
-    //  Return supported device formats for the audio engine node.
-    //
-    //  Return value
-    //      The number of KSDATAFORMAT_WAVEFORMATEXTENSIBLE items.
-    //
-    //  Remarks
-    //      Supported formats index array follows same order as filter's pin
-    //      descriptor list. This routine assumes the engine formats are the
-    //      last item in the filter's array of PIN_DEVICE_FORMATS_AND_MODES.
-    //
     _Post_satisfies_(return > 0)
-    ULONG GetAudioEngineSupportedDeviceFormats(_Outptr_opt_result_buffer_(return) KSDATAFORMAT_WAVEFORMATEXTENSIBLE **ppFormats)
-    {
-        ULONG i;
-        PPIN_DEVICE_FORMATS_AND_MODES pDeviceFormatsAndModes = NULL;
+    ULONG GetAudioEngineSupportedDeviceFormats(_Outptr_opt_result_buffer_(return) KSDATAFORMAT_WAVEFORMATEXTENSIBLE **ppFormats);
 
-        PAGED_CODE();
-
-        ExAcquireFastMutex(&m_DeviceFormatsAndModesLock);
-
-        pDeviceFormatsAndModes = m_DeviceFormatsAndModes;
-
-        // By convention, the audio engine node's device formats are the last
-        // entry in the PIN_DEVICE_FORMATS_AND_MODES list.
-        
-        // Since this endpoint apparently supports offload, there must be at least a system,
-        // offload, and loopback pin, plus the entry for the device formats.
-        ASSERT(m_DeviceFormatsAndModesCount > 3);
-
-        i = m_DeviceFormatsAndModesCount - 1;                       // Index of last list entry
-
-        ASSERT(pDeviceFormatsAndModes[i].PinType == NoPin);
-        ASSERT(pDeviceFormatsAndModes[i].WaveFormats != NULL);
-        ASSERT(pDeviceFormatsAndModes[i].WaveFormatsCount > 0);
-
-        if (ppFormats != NULL)
-        {
-            *ppFormats = pDeviceFormatsAndModes[i].WaveFormats;
-        }
-
-        ExReleaseFastMutex(&m_DeviceFormatsAndModesLock);
-        return pDeviceFormatsAndModes[i].WaveFormatsCount;
-    }
-
-    //---------------------------------------------------------------------------
-    // GetPinSupportedDeviceModes 
-    //
-    //  Return mode information for a given pin.
-    //
-    //  Return value
-    //      The number of MODE_AND_DEFAULT_FORMAT items or 0 if none.
-    //
-    //  Remarks
-    //      Supported formats index array follows same order as filter's pin
-    //      descriptor list.
-    //
     _Success_(return != 0)
-    ULONG GetPinSupportedDeviceModes(_In_ ULONG PinId, _Outptr_opt_result_buffer_(return) _On_failure_(_Deref_post_null_) MODE_AND_DEFAULT_FORMAT **ppModes)
-    {
-        PMODE_AND_DEFAULT_FORMAT modes;
-        ULONG numModes;
+    ULONG GetPinSupportedDeviceModes(_In_ ULONG PinId, _Outptr_opt_result_buffer_(return) _On_failure_(_Deref_post_null_) MODE_AND_DEFAULT_FORMAT **ppModes);
 
-        PAGED_CODE();
-
-        ExAcquireFastMutex(&m_DeviceFormatsAndModesLock);
-
-        ASSERT(m_DeviceFormatsAndModesCount > PinId);
-        ASSERT((m_DeviceFormatsAndModes[PinId].ModeAndDefaultFormatCount == 0) == (m_DeviceFormatsAndModes[PinId].ModeAndDefaultFormat == NULL));
-
-        modes = m_DeviceFormatsAndModes[PinId].ModeAndDefaultFormat;
-        numModes = m_DeviceFormatsAndModes[PinId].ModeAndDefaultFormatCount;
-
-#ifdef SYSVAD_BTH_BYPASS
-        // Special handling for the SCO bypass endpoint, whose modes are determined at runtime
-        if (m_DeviceType == eBthHfpMicDevice)
-        {
-            ASSERT(m_pSidebandDevice != NULL);
-            if (m_pSidebandDevice->IsNRECSupported())
-            {
-                modes = BthHfpMicPinSupportedDeviceModesNrec;
-                numModes = ARRAYSIZE(BthHfpMicPinSupportedDeviceModesNrec);
-            }
-            else
-            {
-                modes = BthHfpMicPinSupportedDeviceModesNoNrec;
-                numModes = ARRAYSIZE(BthHfpMicPinSupportedDeviceModesNoNrec);
-            }
-        }
-#endif // SYSVAD_BTH_BYPASS
-
-        if (ppModes != NULL)
-        {
-            if (numModes > 0)
-            {
-                *ppModes = modes;
-            }
-            else
-            {
-                // ensure that the returned pointer is NULL
-                // in the event of failure (SAL annotation above
-                // indicates that it must be NULL, and OACR sees a possibility
-                // that it might not be).
-                *ppModes = NULL;
-            }
-        }
-
-        ExReleaseFastMutex(&m_DeviceFormatsAndModesLock);
-        return numModes;
-    }
 #pragma code_seg()
 
 protected:
-#pragma code_seg("PAGE")
+#pragma code_seg()
     BOOL IsRenderDevice()
     {
-        PAGED_CODE();
         return (m_DeviceType == eSpeakerDevice   ||
                 m_DeviceType == eSpeakerHpDevice ||        
                 m_DeviceType == eSpeakerHsDevice ||
                 m_DeviceType == eHdmiRenderDevice  ||
                 m_DeviceType == eSpdifRenderDevice ||
                 m_DeviceType == eBthHfpSpeakerDevice ||
+                m_DeviceType == eUsbHsSpeakerDevice  ||
                 m_DeviceType == eHandsetSpeakerDevice) ? TRUE : FALSE;
     }
 
     BOOL IsCellularDevice()
     {
-        PAGED_CODE();
         return (m_DeviceType == eCellularDevice) ? TRUE : FALSE;
     }
 
     BOOL IsLoopbackSupported()
     {
-        PAGED_CODE();
 
         //
         // It is assumed that loopback is supported when offload is supported
@@ -671,91 +553,26 @@ protected:
 
     BOOL IsOffloadSupported()
     {
-        PAGED_CODE();
         return (m_DeviceFlags & ENDPOINT_OFFLOAD_SUPPORTED) ? TRUE : FALSE;
     }
 
-    BOOL IsSystemCapturePin(ULONG nPinId)
-    {
-        PAGED_CODE();
-        ExAcquireFastMutex(&m_DeviceFormatsAndModesLock);
+    BOOL IsSystemCapturePin(ULONG nPinId);
 
-        PINTYPE pinType = m_DeviceFormatsAndModes[nPinId].PinType;
+    BOOL IsCellularBiDiCapturePin(ULONG nPinId);
 
-        ExReleaseFastMutex(&m_DeviceFormatsAndModesLock);
-        return (pinType == SystemCapturePin);
-    }
+    BOOL IsSystemRenderPin(ULONG nPinId);
 
-    BOOL IsCellularBiDiCapturePin(ULONG nPinId)
-    {
-        PAGED_CODE();
-        ExAcquireFastMutex(&m_DeviceFormatsAndModesLock);
+    BOOL IsLoopbackPin(ULONG nPinId);
 
-        PINTYPE pinType = m_DeviceFormatsAndModes[nPinId].PinType;
+    BOOL IsOffloadPin(ULONG nPinId);
 
-        ExReleaseFastMutex(&m_DeviceFormatsAndModesLock);
-        return (pinType == TelephonyBidiPin);
-    }
+    BOOL IsBridgePin(ULONG nPinId);
 
-    BOOL IsSystemRenderPin(ULONG nPinId)
-    {
-        PAGED_CODE();
-        ExAcquireFastMutex(&m_DeviceFormatsAndModesLock);
-
-        PINTYPE pinType = m_DeviceFormatsAndModes[nPinId].PinType;
-
-        ExReleaseFastMutex(&m_DeviceFormatsAndModesLock);
-        return (pinType == SystemRenderPin);
-    }
-
-    BOOL IsLoopbackPin(ULONG nPinId)
-    {
-        PAGED_CODE();
-        ExAcquireFastMutex(&m_DeviceFormatsAndModesLock);
-
-        PINTYPE pinType = m_DeviceFormatsAndModes[nPinId].PinType;
-
-        ExReleaseFastMutex(&m_DeviceFormatsAndModesLock);
-        return (pinType == RenderLoopbackPin);
-    }
-
-    BOOL IsOffloadPin(ULONG nPinId)
-    {
-        PAGED_CODE();
-        ExAcquireFastMutex(&m_DeviceFormatsAndModesLock);
-
-        PINTYPE pinType = m_DeviceFormatsAndModes[nPinId].PinType;
-
-        ExReleaseFastMutex(&m_DeviceFormatsAndModesLock);
-        return (pinType == OffloadRenderPin);
-    }
-
-    BOOL IsBridgePin(ULONG nPinId)
-    {
-        PAGED_CODE();
-        ExAcquireFastMutex(&m_DeviceFormatsAndModesLock);
-
-        PINTYPE pinType = m_DeviceFormatsAndModes[nPinId].PinType;
-
-        ExReleaseFastMutex(&m_DeviceFormatsAndModesLock);
-        return (pinType == BridgePin);
-    }
-
-    BOOL IsKeywordDetectorPin(ULONG nPinId)
-    {
-        PAGED_CODE();
-        ExAcquireFastMutex(&m_DeviceFormatsAndModesLock);
-
-        PINTYPE pinType = m_DeviceFormatsAndModes[nPinId].PinType;
-
-        ExReleaseFastMutex(&m_DeviceFormatsAndModesLock);
-        return (pinType == KeywordCapturePin);
-    }
+    BOOL IsKeywordDetectorPin(ULONG nPinId);
 
     // These three pins are the pins used by the audio engine for host, loopback, and offload.
     ULONG GetSystemPinId()
     {
-        PAGED_CODE();
         ASSERT(IsRenderDevice());
         ASSERT(!IsCellularDevice());
         return IsOffloadSupported() ? KSPIN_WAVE_RENDER_SINK_SYSTEM : KSPIN_WAVE_RENDER2_SINK_SYSTEM;
@@ -764,7 +581,6 @@ protected:
 
     ULONG GetLoopbackPinId()
     {
-        PAGED_CODE();
         ASSERT(IsRenderDevice());
         ASSERT(!IsCellularDevice());
         return IsOffloadSupported() ? KSPIN_WAVE_RENDER_SINK_LOOPBACK : KSPIN_WAVE_RENDER2_SINK_LOOPBACK;
@@ -773,7 +589,6 @@ protected:
 
     ULONG GetOffloadPinId()
     {
-        PAGED_CODE();
         ASSERT(IsRenderDevice());
         ASSERT(IsOffloadSupported());
         ASSERT(!IsCellularDevice());
@@ -843,13 +658,15 @@ protected:
         _In_ ULONG              AudioModuleCount
         );
 
-#if defined(SYSVAD_BTH_BYPASS)
+#if defined(SYSVAD_BTH_BYPASS) || defined(SYSVAD_USB_SIDEBAND)
 public:
 #pragma code_seg()
     BOOL IsSidebandDevice()
     {
         return (m_DeviceType == eBthHfpMicDevice ||
-                m_DeviceType == eBthHfpSpeakerDevice ) ? TRUE : FALSE;
+                m_DeviceType == eBthHfpSpeakerDevice ||
+                m_DeviceType == eUsbHsMicDevice ||
+                m_DeviceType == eUsbHsSpeakerDevice ) ? TRUE : FALSE;
     }
 
     // Returns a weak ref to the Bluetooth HFP device.
@@ -869,7 +686,7 @@ public:
         return sidebandDevice;
     }
 #pragma code_seg()
-#endif // defined(SYSVAD_BTH_BYPASS)
+#endif // defined(SYSVAD_BTH_BYPASS) || defined(SYSVAD_USB_SIDEBAND)
 
 #ifdef SYSVAD_BTH_BYPASS
 #pragma code_seg()

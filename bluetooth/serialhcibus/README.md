@@ -1,3 +1,12 @@
+---
+topic: sample
+description: Demonstrates how to implement a basic bus driver to support the new Bluetooth Extensibility transport DDIs over the UART transport.
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: Bluetooth Serial HCI Bus Driver
     platform: WDM
@@ -7,12 +16,12 @@
     samplefwlink: http://go.microsoft.com/fwlink/p/?LinkId=617641
 --->
 
-Bluetooth Serial HCI Bus Driver
-===============================
+# Bluetooth Serial HCI Bus Driver
 
 The purpose of this sample is to demonstrate how to implement a basic bus driver to support the new [Bluetooth Extensibility transport DDIs](http://msdn.microsoft.com/en-us/library/windows/hardware/ff536585) over the UART transport. Such a serial bus driver can support a multi-radio device over the UART transport and utilize a common Bluetooth HCI packet for communication. The lower edge of this driver interfaces with a UART controller following the Bluetooth SIG's UART (H4) transport protocol.
 
 ## Universal Windows Driver Compliant
+
 This sample builds a Universal Windows Driver. It uses only APIs and DDIs that are included in OneCoreUAP.
 
 **Note** This sample driver is generic. It is not designed for a specific device and allows for a vendor to adopt and enhance it for supporting Bluetooth.
@@ -65,4 +74,4 @@ device.h - header file for device.c
 
 driver.rc - driver version and name
 
-SerialBusWdk.inx - device specific INF file to install this driver. The vendor will need to add the hardware ID to match the "\_HID" for the Serial Bus Device (Bluetooth) in the DSDT.asl file. For example, in SerialBusWDK.inx, the hardware ID is "ACPI\\<*vendor*\>\_BTH0" where <*vendor*\> could be a 4 digit vendor name
+SerialBusWdk.inx - device specific INF file to install this driver. The vendor will need to add the hardware ID to match the "\_HID" for the Serial Bus Device (Bluetooth) in the DSDT.asl file. For example, in SerialBusWDK.inx, the hardware ID is "ACPI\\<*vendor*\>\_BTH0" where <*vendor*\> could be a 4 digit vendor name.

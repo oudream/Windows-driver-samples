@@ -1,3 +1,12 @@
+---
+topic: sample
+description: Demonstrates how to write a UMDF v2 driver to control an activity sensor.
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: Activity Sensor Driver Sample
     platform: UMDF2

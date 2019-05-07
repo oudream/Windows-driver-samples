@@ -1,3 +1,12 @@
+---
+topic: sample
+description: Demonstrates how to structure a Radio Manager for use with the Windows Radio Management APIs.
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: Windows Radio Management Sample
     platform: WDM
@@ -7,9 +16,7 @@
     samplefwlink: http://go.microsoft.com/fwlink/p/?LinkId=617920
 --->
 
-
-Windows Radio Management Sample
-===============================
+# Windows Radio Management Sample
 
 The Radio Manager sample demonstrates how to structure a Radio Manager for use with the Windows Radio Management APIs.
 
@@ -108,4 +115,3 @@ Simply change the values in the registry. For example, change the radio state fr
 ### Removing a Radio Instance ###
 
 Delete the corresponding registry key.
-

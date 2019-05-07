@@ -1,3 +1,12 @@
+---
+topic: sample
+description: The Trusted Execution Environment (TrEE) sample.
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: TrEE sample
     platform: KMDF
@@ -8,3 +17,5 @@
 --->
 
 # TrEE sample
+
+The Trusted Execution Environment (TrEE) sample.

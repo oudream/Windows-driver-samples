@@ -1,3 +1,12 @@
+---
+topic: sample
+description: Demonstrates a connection-less NDIS 6.0 protocol KMDF driver.
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: Connection-less NDIS 6.0 Protocol KMDF Sample Driver
     platform: KMDF
@@ -7,9 +16,7 @@
     samplefwlink: http://go.microsoft.com/fwlink/p/?LinkId=620197
 --->
 
-
-Connection-less NDIS 6.0 Protocol KMDF Sample Driver
-====================================================
+# Connection-less NDIS 6.0 Protocol KMDF Sample Driver
 
 This sample demonstrates a connection-less NDIS 6.0 protocol KMDF driver.
 
@@ -123,4 +130,3 @@ Common.hpp | Header file containing the common include files for the project
 dllmain.cpp |  Handles loading/unloading of Wdf Coinstaller and the notify object dll
 ProtNotify.idl |  Defines the interfaces for the notify object dll
 ProtNotify.rc |  Resource file for the notify object dll
-

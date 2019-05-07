@@ -1,3 +1,12 @@
+---
+topic: sample
+description: Demonstrates the traffic inspection capabilities of the Windows Filtering Platform (WFP).
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: Windows Filtering Platform Traffic Inspection Sample
     platform: KMDF
@@ -7,9 +16,7 @@
     samplefwlink: http://go.microsoft.com/fwlink/p/?LinkId=617931
 --->
 
-
-Windows Filtering Platform Traffic Inspection Sample
-====================================================
+# Windows Filtering Platform Traffic Inspection Sample
 
 This sample driver demonstrates the traffic inspection capabilities of the Windows Filtering Platform (WFP).
 
@@ -22,6 +29,7 @@ Inspect.sys implements the `ClassifyFn` callout functions for the ALE Connect, R
 Connect/Packet inspection is done out-of-band by a system worker thread by using the reference-drop-clone-reinject mechanism as well as the ALE pend/complete mechanism. Therefore, the sample can serve as a basis for scenarios in which a filtering decision cannot be made within the `classifyFn()` callout and instead must be made, for example, by a user-mode application.
 
 ## Universal Windows Driver Compliant
+
 This sample builds a Universal Windows Driver. It uses only APIs and DDIs that are included in OneCoreUAP.
 
 Automatic deployment
@@ -37,7 +45,7 @@ Before you automatically deploy a driver, you must provision the target computer
 Manual deployment
 -----------------
 
-Before you manually deploy a driver, you must turn on test signing and install a certificate on the target computer. You also need to copy the [DevCon](http://msdn.microsoft.com/en-us/library/windows/hardware/ff544707) tool to the target computer. For instructions, see [Preparing a Computer for Manual Driver Deployment](http://msdn.microsoft.com/en-us/library/windows/hardware/dn265571). After you have prepared the target computer for manual deployment, continue with these steps:
+Before you manually deploy a driver, you must turn on test signing and install a certificate on the target computer. You also need to copy the [DevCon](http://msdn.microsoft.com/en-us/library/windows/hardware/ff544707) tool to the target computer. For instructions, see [Preparing a Computer for Manual Driver Deployment](https://docs.microsoft.com/en-us/windows-hardware/drivers/develop/preparing-a-computer-for-manual-driver-deployment). After you have prepared the target computer for manual deployment, continue with these steps:
 
 1.  Copy all of the files in your driver package to a folder on the target computer (for example, c:\\WfpTrafficInspectionSamplePackage).
 2.  On the target computer, navigate to your driver package folder. Right click inspect.inf, and choose **Install**
@@ -62,4 +70,3 @@ Remarks
 -------
 
 For more information on creating a Windows Filtering Platform Callout Driver, see [Windows Filtering Platform Callout Drivers](http://msdn.microsoft.com/en-us/library/windows/hardware/ff571068).
-

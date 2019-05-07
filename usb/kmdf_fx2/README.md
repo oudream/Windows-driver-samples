@@ -1,3 +1,12 @@
+---
+topic: sample
+description: Demonstrates how to use KMDF to perform bulk and interrupt data transfers to a USB device.
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: Sample KMDF Function Driver for OSR USB-FX2
     platform: KMDF
@@ -7,9 +16,7 @@
     samplefwlink: http://go.microsoft.com/fwlink/p/?LinkId=620313
 --->
 
-
-Sample KMDF Function Driver for OSR USB-FX2
-===========================================
+# Sample KMDF Function Driver for OSR USB-FX2
 
 The kmdf\_fx2 sample is a Kernel-Mode Driver Framework (KMDF) driver for the OSR USB-FX2 device. It includes a test app and sample device metadata.
 
@@ -18,6 +25,7 @@ In the Windows Driver Kit (WDK), the osrusbfx2 sample demonstrated how to perfor
 The specification for the device is at <http://www.osronline.com/hardware/OSRFX2_32.pdf>. The driver and sample device metadata also work with the [Custom driver access](http://go.microsoft.com/fwlink/p/?LinkID=248288) sample.
 
 ## Universal Windows Driver Compliant
+
 This sample builds a Universal Windows Driver. It uses only APIs and DDIs that are included in OneCoreUAP.
 
 Overview
@@ -58,7 +66,7 @@ This directory contains driver code that demonstrates the following functionalit
 -   Loads the driver and responds to PnP and Power events. You can install, uninstall, disable, enable, suspend, and resume the system.
 -   Creates a context with the WDFDEVICE object.
 -   Initializes the USB device by registering a *EvtPrepareHardware* callback.
--   Marks the interface restricted so that it can be accessed by a privileged Windows Store device app.
+-   Marks the interface restricted so that it can be accessed by a privileged UWP device app.
 -   Creates a default parallel queue to receive an IOCTL request to set bar graph display.
 -   Retrieves memory handle from the requests and uses it to send a vendor command to the USB device.
 -   Registers read and write events on the default queue.
@@ -375,5 +383,3 @@ To trace, you can use the in-box tools, logman and tracerpt, or download XPerf (
 4.  View the trace file using Xperf:
 
     `xperfview OSRUSBFX2.etl`
-
-

@@ -1,3 +1,12 @@
+---
+topic: sample
+description: Demonstrates the WLAN IHV UI.
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: IHV Sample UI
     platform: Application
@@ -8,3 +17,5 @@
 --->
 
 # IHV Sample UI
+
+This sample demonstrates the WLAN IHV UI.

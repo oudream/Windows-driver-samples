@@ -1,3 +1,12 @@
+---
+topic: sample
+description: Demonstrates use of the WLAN WDI.
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: WDI samples
     platform: KMDF
@@ -8,3 +17,5 @@
 --->
 
 # WDI samples
+
+This sample demonstrates use of the WLAN WDI.

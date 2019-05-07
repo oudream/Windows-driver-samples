@@ -1,3 +1,12 @@
+---
+topic: sample
+description: Demonstrates how to write a UMDF v2 sensor driver to output Simple Device Orientation values.
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: Simple Device Orientation Sensor Sample
     platform: UMDF2

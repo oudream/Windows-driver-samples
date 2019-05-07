@@ -1,3 +1,12 @@
+---
+topic: sample
+description: A pass-through NDIS 6 filter driver demonstrating the basic principles of an NDIS 6.0 Filter driver.
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: NDIS 6.0 Filter Driver
     platform: WDM
@@ -7,14 +16,11 @@
     samplefwlink: http://go.microsoft.com/fwlink/p/?LinkId=617915
 --->
 
-
-NDIS 6.0 Filter Driver
-======================
+# NDIS 6.0 Filter Driver
 
 The Ndislwf sample is a do-nothing pass-through NDIS 6 filter driver that demonstrates the basic principles underlying an NDIS 6.0 Filter driver. The sample replaces the NDIS 5 Sample Intermediate Driver (Passthru driver).
 
 Although this sample filter driver is installed as a modifying filter driver, it doesn't modify any packets; it only repackages and sends down all OID requests. You can modify this filter driver to change packets before passing them along. Or you can use the filter to originate new packets to send or receive. For example, the filter could encrypt/compress outgoing and decrypt/decompress incoming data.
-
 
 For more information, see [NDIS Filter Drivers](http://msdn.microsoft.com/en-us/library/windows/hardware/ff565492) in the network devices design guide.
 
@@ -39,7 +45,7 @@ Before you automatically deploy a driver, you must provision the target computer
 Manual deployment
 -----------------
 
-Before you manually deploy a driver, you must turn on test signing and install a certificate on the target computer. You also need to copy the [DevCon](http://msdn.microsoft.com/en-us/library/windows/hardware/ff544707) tool to the target computer. For instructions, see [Preparing a Computer for Manual Driver Deployment](http://msdn.microsoft.com/en-us/library/windows/hardware/dn265571).
+Before you manually deploy a driver, you must turn on test signing and install a certificate on the target computer. You also need to copy the [DevCon](http://msdn.microsoft.com/en-us/library/windows/hardware/ff544707) tool to the target computer. For instructions, see [Preparing a Computer for Manual Driver Deployment](https://docs.microsoft.com/en-us/windows-hardware/drivers/develop/preparing-a-computer-for-manual-driver-deployment).
 
 Ndislwf is installed as a service (called **NDIS Sample LightWeight Filter** in the supplied INF). To install it, do the following:
 
@@ -112,5 +118,3 @@ What the Ndislwf sample driver does:
 6.  All indications arriving from an underlying NDIS driver are forwarded up by Ndislwf filter driver.
 7.  NDIS calls the filter's [*FilterPause*](http://msdn.microsoft.com/en-us/library/windows/hardware/ff549957) handler when NDIS needs to detach the filter from the stack or there is some configuration changes in the stack. In processing the pause request from NDIS, the Ndislwf driver waits for all its own outstanding requests to be completed before it completes the pause request.
 8.  NDIS calls the Ndislwf driver's [*FilterDetach*](http://msdn.microsoft.com/en-us/library/windows/hardware/ff549918) entry point when NDIS needs to detach a filter module from NDIS stack. The *FilterDetach* handler should free all the memory allocation done in [*FilterAttach*](http://msdn.microsoft.com/en-us/library/windows/hardware/ff549905), and undo the operations it did in *FilterAttach* Handler.
-
-

@@ -1,3 +1,12 @@
+---
+topic: sample
+description: Demonstrates how to generate layouts for various keyboards and locales.
+languages:
+- cpp
+products:
+- windows
+---
+
 <!---
     name: Keyboard Layout Samples
     platform: Application
@@ -7,9 +16,7 @@
     samplefwlink: https://aka.ms/rapjms
 --->
 
-
-Keyboard Layout Samples
-=======================
+# Keyboard Layout Samples
 
 The keyboard layout samples demonstrate how to generate layouts for various keyboards and locales.
 
@@ -89,4 +96,3 @@ Loading the Sample
 In order to load the layout DLLs, you may need to turn to the Regional and Language Options application in Control Panel and add input locales that use the keyboard layouts you installed.
 
 You may also choose to do it programmatically. LoadKeyboardLayout API can be used to load the keyboard layouts. To activate the keyboard layout, you may choose to specify KLF\_ACTIVATE flag to LoadKeyboardLayout API, or you may need to call ActivateKeyboardLayout API.
-
